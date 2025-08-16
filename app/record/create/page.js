@@ -83,7 +83,7 @@ const CreateItem = () => {
 
         try{
             const finalWaterIntake = increaseOrDecrease === "decrease" ? -waterIntake : waterIntake
-            const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/item/create`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/record/create`, {
                 method: "POST",
                 headers: {
                     "Accept": "application/json",
