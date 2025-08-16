@@ -2,14 +2,6 @@ import mongoose from "mongoose"
 
 const Schema = mongoose.Schema
 
-const  ItemSchema = new Schema({
-    title: String,
-    image: String,
-    price: String,
-    description: String,
-    email: String,
-})
-
 const  RecordSchema = new Schema({
     registerDate: {
         type: Date,
@@ -50,6 +42,5 @@ const UserSchema = new Schema({
     }
 })
 
-export const ItemModel = mongoose.models.Item || mongoose.model("Item", ItemSchema)
 export const UserModel = mongoose.models.User || mongoose.model("User", UserSchema)
 export const RecordModel = mongoose.models.Record || mongoose.model("Record", RecordSchema)
