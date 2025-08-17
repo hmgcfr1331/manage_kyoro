@@ -99,7 +99,7 @@ const CreateItem = () => {
                 })
             })
             const jsonData = await response.json()
-            alert(jsonData.message)
+            // alert(jsonData.message)
             resetForm()
             router.refresh()
         }catch{

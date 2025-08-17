@@ -14,8 +14,11 @@ import {
   Pagination,
   Stack,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  Box,
+  Typography
 } from '@mui/material'
+import { LineChart } from '@mui/x-charts'
 import InfoIcon from '@mui/icons-material/Info'
 
 const getAllItems = async() => {
@@ -60,6 +63,36 @@ const getStatusColor = (total: number) => {
   if (total < 200 || total >= 500) return { status: '異常', color: '#ffebee' };
   if (total > 250) return { status: '要観察', color: '#fff3e0' };
   return { status: '平常', color: '#e8f5e9' };
+};
+
+const getLast30DaysData = (allItems: any[]) => {
+  const today = new Date();
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 29); // 今日を含む30日間
+
+  const dateArray = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date(thirtyDaysAgo);
+    date.setDate(thirtyDaysAgo.getDate() + i);
+    return date.toISOString().split('T')[0];
+  });
+
+  const dailyData = new Map<string, number>();
+  dateArray.forEach(date => dailyData.set(date, 0));
+
+  allItems.forEach((record: any) => {
+    const recordDate = record.date.substring(0, 10);
+    if (dailyData.has(recordDate)) {
+      dailyData.set(recordDate, (dailyData.get(recordDate) || 0) + record.waterIntake);
+    }
+  });
+
+  return {
+    xAxis: dateArray.map(date => {
+      const [y, m, d] = date.split('-');
+      return `${Number(m)}/${Number(d)}`;
+    }),
+    yAxis: Array.from(dailyData.values())
+  };
 };
 
 const ReadAllItems = () => {
@@ -176,6 +209,39 @@ const ReadAllItems = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Box sx={{ maxWidth: 800, margin: 'auto', mt: 4, mb: 4 }}>
+        <Paper sx={{ p: 2, boxShadow: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            過去30日間の水分摂取量グラフ
+          </Typography>
+          
+          {allItems.length > 0 && (() => {
+            const { xAxis, yAxis } = getLast30DaysData(allItems);
+            return (
+              <LineChart
+                xAxis={[{ 
+                  data: xAxis,
+                  label: '日付',
+                  scaleType: 'point',
+                  tickMinStep: 1
+                }]}
+                yAxis={[{ 
+                  min: 0,
+                  max: 500
+                }]}
+                series={[{
+                  data: yAxis,
+                  area: true,
+                  showMark: true,
+                  label: '1日あたりの飲水量'
+                }]}
+                height={300}
+              />
+            );
+          })()}
+        </Paper>
+      </Box>
     </>
   )
 }

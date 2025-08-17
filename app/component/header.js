@@ -21,6 +21,7 @@ const Header = () => {
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* ロゴ部分 */}
+          {/*}
           <Typography
             variant="h6"
             noWrap
@@ -35,6 +36,7 @@ const Header = () => {
           >
             Kyoro管理
           </Typography>
+          */}
 
           {/* ナビゲーションメニュー */}
           <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
