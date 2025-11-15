@@ -20,6 +20,7 @@ import {
 } from '@mui/material'
 import { LineChart } from '@mui/x-charts'
 import InfoIcon from '@mui/icons-material/Info'
+import ErrorAlert from './component/errorAlert'
 
 const getAllItems = async() => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/record/readall`, {cache: "no-store"})
@@ -66,9 +67,16 @@ const getStatusColor = (total: number) => {
 };
 
 const getLast30DaysData = (allItems: any[]) => {
-  const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 29); // 今日を含む30日間
+  // 変更点: 最新のデータが存在する日を一番右に表示する
+  // allItems の中から最新日を取得し、その日を終端にして過去30日分を表示します
+  // （従来は今日を終端にしていた）
+
+  // 日付形式は 'YYYY-MM-DD' を前提
+  const recordDates = allItems.map((r: any) => r.date.substring(0, 10));
+  const latestRecordDateStr = recordDates.reduce((a: string, b: string) => (a > b ? a : b));
+  const endDate = new Date(latestRecordDateStr);
+  const thirtyDaysAgo = new Date(endDate);
+  thirtyDaysAgo.setDate(endDate.getDate() - 29); // endDate を含む 30 日間
 
   const dateArray = Array.from({ length: 30 }, (_, i) => {
     const date = new Date(thirtyDaysAgo);
@@ -99,6 +107,7 @@ const ReadAllItems = () => {
   const [page, setPage] = useState(1);
   const [allItems, setAllItems] = useState<any[]>([]);
   const [showOnlyAlerts, setShowOnlyAlerts] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -124,16 +133,31 @@ const ReadAllItems = () => {
     setPage(value);
   };
 
+  const handleFilterChange = (checked: boolean) => {
+    if (checked) {
+      const filteredItems = allItems.filter(item => item.remark);
+      if (filteredItems.length === 0) {
+        setErrorMessage('備考ありのレコードがありません');
+        setShowOnlyAlerts(false);
+        return;
+      }
+    }
+    setErrorMessage('');
+    setShowOnlyAlerts(checked);
+    setPage(1);
+  };
+
   const weeklySummary = getWeeklySummary(allItems);
 
   return (
     <>
+      <ErrorAlert message={errorMessage} onClose={() => setErrorMessage('')} />
       <Stack direction="row" justifyContent="center" sx={{ mt: 4, mb: 2 }}>
         <FormControlLabel
           control={
             <Switch
               checked={showOnlyAlerts}
-              onChange={(e) => setShowOnlyAlerts(e.target.checked)}
+              onChange={(e) => handleFilterChange(e.target.checked)}
               color="error"
             />
           }
@@ -211,7 +235,7 @@ const ReadAllItems = () => {
       </TableContainer>
 
       <Box sx={{ maxWidth: 800, margin: 'auto', mt: 4, mb: 4 }}>
-        <Paper sx={{ p: 2, boxShadow: 3 }}>
+        <Paper sx={{ boxShadow: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
             過去30日間の水分摂取量グラフ
           </Typography>

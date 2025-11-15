@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import useAuth from "../../utils/useAuth"
+import SuccessAlert from "../../component/successAlert"
 import { 
     Container,
     Box,
@@ -23,6 +24,7 @@ const CreateItem = () => {
     const [remark, setRemark] = useState("")
     const [waterIntakeError, setWaterIntakeError] = useState("")
     const [remarkError, setRemarkError] = useState("")
+    const [successMessage, setSuccessMessage] = useState("")
 
     const paperStyle = {
         boxShadow: 'none',
@@ -99,9 +101,12 @@ const CreateItem = () => {
                 })
             })
             const jsonData = await response.json()
-            // alert(jsonData.message)
+            setSuccessMessage("記録を作成しました")
             resetForm()
-            router.refresh()
+            setTimeout(() => {
+                setSuccessMessage("")
+                router.refresh()
+            }, 2000)
         }catch{
             alert("記録作成失敗")
         }
@@ -110,6 +115,7 @@ const CreateItem = () => {
     if(loginUser){
         return ( 
         <Container maxWidth="sm">
+            <SuccessAlert message={successMessage} />
             <Box sx={{ mt: 4, mb: 4 }}>
                 <Paper sx={{ p: 4, ...paperStyle }}>
                     <Typography variant="h4" component="h1" gutterBottom align="center">
