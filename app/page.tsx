@@ -21,6 +21,7 @@ import {
 import { LineChart } from '@mui/x-charts'
 import InfoIcon from '@mui/icons-material/Info'
 import ErrorAlert from './component/errorAlert'
+import LoadingSpinner from './component/loadingSpinner'
 
 const getAllItems = async() => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/record/readall`, {cache: "no-store"})
@@ -108,12 +109,17 @@ const ReadAllItems = () => {
   const [allItems, setAllItems] = useState<any[]>([]);
   const [showOnlyAlerts, setShowOnlyAlerts] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
-      const items = await getAllItems();
-      setAllItems(items);
+      try {
+        const items = await getAllItems();
+        setAllItems(items);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
   }, []);
@@ -148,6 +154,10 @@ const ReadAllItems = () => {
   };
 
   const weeklySummary = getWeeklySummary(allItems);
+
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
 
   return (
     <>
